@@ -13,7 +13,9 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.scandium.ScandiumLogger;
-
+/*
+  Sample args:  POST coap://localhost:5683
+ */
 public class CoapClientApp {
     static {
         CaliforniumLogger.initialize();
