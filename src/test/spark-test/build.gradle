@@ -1,0 +1,28 @@
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+dependencies {
+
+    compile(
+            [group: 'com.datastax.spark', name: 'spark-cassandra-connector-java_2.11', version: sparkCassandraJavaVersion],
+            [group: 'org.apache.spark', name: 'spark-streaming-kafka_2.11', version: sparkKafkaVersion],
+            [group: 'com.datastax.spark', name: 'spark-cassandra-connector_2.11', version: sparkCassandraVersion],
+            [group: 'com.typesafe', name: 'config', version: configVersion],
+            [group: "org.slf4j", name : "slf4j-api", version: slf4jVersion],
+            [group: "org.slf4j", name : "slf4j-log4j12", version: slf4jVersion],
+            [group: 'redis.clients', name: 'jedis', version: jedisVersion],
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion]
+    )
+
+    compileOnly (
+            [group: 'org.scala-lang', name: 'scala-library', version: scalaVersion],
+            [group: 'org.apache.spark', name: 'spark-core_2.11', version: sparkVersion],
+            [group: 'org.apache.spark', name: 'spark-streaming_2.11', version: sparkVersion],
+    )
+}
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

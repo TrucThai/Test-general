@@ -1,0 +1,17 @@
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+version '0.1'
+dependencies {
+
+    compile(
+            [group: 'redis.clients', name: 'jedis', version: jedisVersion],
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion]
+    )
+}
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

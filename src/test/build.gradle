@@ -1,0 +1,31 @@
+buildscript {
+    repositories {
+        maven {url = 'http://jcenter.bintray.com/'}
+        maven {url = 'http://repo1.maven.org/maven2/'}
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
+}
+
+
+subprojects {
+    plugins.withType(JavaPlugin) {
+        repositories {
+            maven {url = 'http://jcenter.bintray.com/'}
+            maven {url = 'http://repo1.maven.org/maven2/'}
+            maven {url = 'http://central.maven.org/maven2/'}
+        }
+
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+
+        compileJava.options.encoding = 'UTF-8'
+
+        dependencies {
+            compile "org.slf4j:slf4j-api:$slf4jVersion"
+            testCompile "junit:junit:$junitVersion"
+        }
+    }
+}

@@ -1,0 +1,23 @@
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'application'
+
+version '0.1'
+dependencies {
+
+    compile(
+            [group: 'org.springframework', name: 'spring-core', version: '4.3.4.RELEASE'],
+            [group: 'org.eclipse.californium', name: 'californium-core', version: californiumVersion],
+            [group: 'org.eclipse.californium', name: 'scandium', version: californiumVersion],
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion]
+    )
+}
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    manifest {
+        attributes 'Main-Class': 'com.biglabs.coap.CoapClientApp'
+    }
+}
