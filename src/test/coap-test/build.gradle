@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 version '0.1'
+
 dependencies {
 
     compile(
@@ -15,8 +16,9 @@ dependencies {
 task fatJar(type: Jar) {
     baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
     with jar
-    manifest {
+    manifest{
         attributes 'Main-Class': 'com.biglabs.coap.CoapClientApp'
     }
 }

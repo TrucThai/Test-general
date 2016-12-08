@@ -61,7 +61,7 @@ public class CoapClientApp {
 
         // display help if no parameters specified
         if (args.length < 2) {
-            return;
+            throw new IOException("Argurment is missing");
         }
 
         method = args[0].toUpperCase();
