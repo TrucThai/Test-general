@@ -10,10 +10,9 @@ import java.util.Scanner;
 
 public class Util {
     public static String[] loadFromResource(String path) throws IOException {
-        Resource body = new ClassPathResource(path);
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
         List<String> result = new ArrayList<>();
-        File file = body.getFile();
-        try (Scanner scanner = new Scanner(file)) {
+        try (Scanner scanner = new Scanner(Thread.currentThread().getContextClassLoader().getResourceAsStream(path))) {
 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
@@ -22,7 +21,7 @@ public class Util {
 
             scanner.close();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             return new String[0];
         }
 

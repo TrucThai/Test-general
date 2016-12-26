@@ -73,7 +73,7 @@ public class CoapClientApp {
         while (true) {
             payload = genPayload();
             send(method, uri, payload);
-            Thread.sleep(10);
+            //Thread.sleep(10);
         }
     }
 
@@ -112,7 +112,7 @@ public class CoapClientApp {
                 break;
         }
 
-        return device + "," + metric + ",double," + value;
+        return device + " " + metric + " double " + value + " " + System.currentTimeMillis();
     }
 
     private static void send(String method, URI uri, String payload){
@@ -122,7 +122,7 @@ public class CoapClientApp {
             request.setPayload(payload);
             request.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
             request.send();
-            request.waitForResponse();
+            //request.waitForResponse();
         } catch(Exception e){
             System.err.println("Failed to send request: " + e);
         }

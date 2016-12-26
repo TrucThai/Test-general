@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestLauncher {
+public class OutProcessLauncher {
     public static void main(String[] args) throws Exception {
         Map<String, String> env = new HashMap<>();
         env.put("SPARK_PRINT_LAUNCH_COMMAND", "1");

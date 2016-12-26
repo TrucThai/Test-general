@@ -15,7 +15,7 @@ public final class JavaSparkPi {
     public static void main(String[] args) throws Exception {
         SparkConf conf = new SparkConf()
                 .setAppName("JavaSparkPi")
-                .setMaster("local[*]");
+                .setMaster("spark://192.168.1.131:7077");
         SparkContext context = new SparkContext(conf);
 
         JavaSparkContext jsc = new JavaSparkContext(context);

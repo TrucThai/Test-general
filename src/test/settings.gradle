@@ -3,4 +3,5 @@ include 'spark-test'
 include 'json-test'
 include 'coap-test'
 include 'alarm-test'
+include 'mqtt-test'
 
