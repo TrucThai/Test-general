@@ -96,3 +96,5 @@ jspm_packages
 # Output of 'npm pack'
 *.tgz
 Source/iot/spark/iot-spark-core/src/main/java/com/biglabs/iot/spark/core/source/CassandraStreamingSource.java
+
+build/
