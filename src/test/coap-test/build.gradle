@@ -9,8 +9,13 @@ dependencies {
             [group: 'org.springframework', name: 'spring-core', version: '4.3.4.RELEASE'],
             [group: 'org.eclipse.californium', name: 'californium-core', version: californiumVersion],
             [group: 'org.eclipse.californium', name: 'scandium', version: californiumVersion],
-            [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion]
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion],
+            [group: 'redis.clients', name: 'jedis', version: jedisVersion],
+            [group: 'com.esotericsoftware', name: 'kryo', version: '4.0.0'],
+            [group: 'io.vertx', name: 'vertx-dropwizard-metrics',version: vertxVersion]
     )
+    compile group: 'org.eclipse.jetty.aggregate', name: 'jetty-all-server', version: '8.2.0.v20160908'
+
 }
 
 task fatJar(type: Jar) {
