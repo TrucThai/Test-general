@@ -11,8 +11,8 @@ dependencies {
             [group: "org.slf4j", name : "slf4j-api", version: slf4jVersion],
             [group: "org.slf4j", name : "slf4j-log4j12", version: slf4jVersion],
             [group: 'redis.clients', name: 'jedis', version: jedisVersion],
-            //[group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion],
-            [group: 'org.apache.spark', name: 'spark-launcher_2.11', version: sparkVersion]
+            [group: 'org.apache.spark', name: 'spark-launcher_2.11', version: sparkVersion],
+            [group: 'org.apache.hadoop', name: 'hadoop-client', version: '2.7.3']
     )
 
     //compileOnly
@@ -32,6 +32,6 @@ task fatJar(type: Jar) {
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
     with jar
     manifest{
-        attributes 'Main-Class': 'com.biglabs.spark.JavaSparkPi'
+        attributes 'Main-Class': 'com.biglabs.spark.ParquetStreamWriter'
     }
 }
