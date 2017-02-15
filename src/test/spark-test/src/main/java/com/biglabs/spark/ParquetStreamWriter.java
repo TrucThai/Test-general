@@ -9,8 +9,10 @@ import kafka.serializer.StringDecoder;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
@@ -24,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -38,9 +41,8 @@ public class ParquetStreamWriter {
         Config rootConf = ConfigFactory.parseResources(classLoader, "application.conf");
         System.out.print(rootConf.entrySet());
         Config kafka = rootConf.getConfig("kafka-input");
-        String KafkaTopicRaw = kafka.getString("topic.power");
         String brokers = kafka.getString("brokers");
-        String hdfsUrl  = "hdfs://192.168.1.73:9000/temp/parquet/";
+        String hdfsUrl  = "hdfs://192.168.1.73:9000/temp/";
 
         Config spark = rootConf.getConfig("spark");
         String sparkMaster = spark.getString("master");// "local[*]";
@@ -49,21 +51,21 @@ public class ParquetStreamWriter {
 
         SparkConf conf = new SparkConf()
                 .setAppName(ParquetStreamWriter.class.getSimpleName())
-                .setMaster("local[*]")
+                .setMaster(sparkMaster)
                 .set("spark.cleaner.ttl", String.valueOf(sparkCleanerTtl))
                 .set("spark.logConf", "true")
-                .set("spark.executor.cores", "1");
+                .set("spark.executor.cores", "5");
 
         Config kafkaProducerConfig = rootConf.getConfig("kafka-producer-druid");
-        String druidTopic =  kafkaProducerConfig.getString("topic.iot.double");
+        String druidTopic =  "druid-test";
 
         JavaStreamingContext ssc = new JavaStreamingContext(conf, new Duration(streamingBatchInterval));
 
         ssc.sparkContext().hadoopConfiguration().set("fs.hdfs.impl", DistributedFileSystem.class.getName());
         ssc.sparkContext().hadoopConfiguration().set("fs.file.impl", LocalFileSystem.class.getName());
-
-        SQLContext sqlContext = new SQLContext(ssc.sparkContext());
         SparkSession sparkSession = SparkSession.builder().sparkContext(ssc.sparkContext().sc()).getOrCreate();
+
+        Broadcast<ObjectMapperProvider> mapperProviderBroadcast = ssc.sparkContext().broadcast(new ObjectMapperProvider());
 
         Map<String, Object> producerConfig = new HashedMap();
         for (Map.Entry<String, ConfigValue> e: kafkaProducerConfig.getConfig("producer").entrySet()) {
@@ -90,32 +92,32 @@ public class ParquetStreamWriter {
             e.printStackTrace();
         }
 
+        JavaDStream<String> deviceStrings = rootStream.map(tuple -> tuple._2);
+        deviceStrings.repartition(1).foreachRDD(stringrdd -> stringrdd.saveAsTextFile(hdfsUrl + "raw/" + System.currentTimeMillis(), GzipCodec.class));
+
         JavaDStream<Device> devices = rootStream.flatMap(tuple -> {
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = mapperProviderBroadcast.getValue().getMapper();
             ArrayList<Device> deviceList = new ArrayList<Device>();
             try {
                 Device d = mapper.readValue(tuple._2(), Device.class);
                 deviceList.add(d);
             } catch (Exception e){
-                logger.error("parse device failed", e.getMessage());
+                logger.error("parse device failed:\n " + e.getMessage());
             }
             return deviceList.iterator();
         });
 
-
-
         devices.foreachRDD(deviceRDD -> {
-            logger.info("Device: " + deviceRDD.count());
             Dataset<Row> df = sparkSession.createDataFrame(deviceRDD, Device.class);
-            long count = df.count();
-            logger.info("Number of items: " + df.count());
-            if(count > 0) {
+            //long count = df.count();
+            //logger.info("Number of items: " + df.count());
+            //if(count > 0) {
                 try {
-                    df.repartition(1).write().parquet(hdfsUrl + System.currentTimeMillis());
+                    df.repartition(1).write().parquet(hdfsUrl + "parquet/" + System.currentTimeMillis());
                 } catch (Exception e) {
-                    logger.error("failed to write", e.getMessage());
+                    logger.error("failed to write\n" + e.getMessage());
                 }
-            }
+            //}
             //df.count();
         });
 
@@ -126,5 +128,18 @@ public class ParquetStreamWriter {
     public static void main(String[] args) throws InterruptedException {
         ParquetStreamWriter app = new ParquetStreamWriter();
         app.run(args);
+    }
+
+    public static class ObjectMapperProvider implements Serializable{
+        private ObjectMapper mapper = null;
+
+        public ObjectMapper getMapper(){
+            synchronized (this){
+                if(mapper == null){
+                    mapper = new ObjectMapper();
+                }
+            }
+            return mapper;
+        }
     }
 }
